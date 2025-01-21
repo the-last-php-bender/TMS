@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.2-fpm
+    container_name: task_app
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  web:
+    image: nginx:alpine
+    container_name: task_web
+    volumes:
+      - .:/var/www/html
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: task_db
+    environment:
+      MYSQL_DATABASE: task_management
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
